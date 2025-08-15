@@ -7,6 +7,24 @@
 **RiftEncrypt** is a standalone C++ library for secure communication in real-time systems. It powers the encryption layer in [RiftNet](https://github.com/TheToastiest/RiftNet) and is designed to be fast, stateless, and fully compatible with **libsodium**.
 
 ---
+## BENCHMARKS
+
+Starting RiftEncrypt End-to-End Benchmark...
+--------------------------------------------------------------------------------
+Algorithm                Payload Size   Iterations     Ops/Second
+--------------------------------------------------------------------------------
+AES-256-GCM              64 B           100000         1929324.97
+AES-256-GCM              512 B          100000         2083832.58
+AES-256-GCM              1400 B         100000         1275380.06
+AES-256-GCM              4096 B         100000         609067.18
+--------------------------------------------------------------------------------
+ChaCha20-Poly1305        64 B           100000         1276071.74
+ChaCha20-Poly1305        512 B          100000         804208.91
+ChaCha20-Poly1305        1400 B         100000         335853.80
+ChaCha20-Poly1305        4096 B         100000         142221.82
+--------------------------------------------------------------------------------
+
+---
 
 ## 🔑 Features
 
