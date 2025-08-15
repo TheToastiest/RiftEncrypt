@@ -1,8 +1,8 @@
-RiftEncrypt 
+## RiftEncrypt 
 
 RiftEncrypt is a high-performance, modern C++ encryption library designed for real-time applications like networking and games. It provides a clean, type-safe C++ wrapper around the robust and audited libsodium cryptographic library, focusing on ease of use and speed.
 
-Features
+## Features
 Modern C++ Interface: A simple, object-oriented API using std::vector for byte streams and smart pointers for resource management (std::unique_ptr).
 
 AEAD Ciphers: Implements authenticated encryption with associated data (AEAD) to protect against tampering.
@@ -17,7 +17,7 @@ Minimal Dependencies: Only requires a C++17 compiler and the libsodium library.
 
 High Performance: Benchmarked to handle millions of encryption/decryption operations per second.
 
-Requirements
+## Requirements
 C++17 (or newer) compiler
 
 Libsodium library installed and linked
@@ -26,9 +26,9 @@ For Windows users, using a package manager like vcpkg is the recommended way to 
 
 vcpkg install libsodium
 
-Quick Start: API Usage
+## Quick Start: API Usage
 Using RiftEncrypt is straightforward. Create an Encryptor instance by choosing an algorithm and providing a key.
-
+```
 #include "RiftEncrypt.hpp"
 #include <iostream>
 
@@ -74,13 +74,13 @@ int main() {
 
     return 0;
 }
+```
+## Important: The example above uses a zero-filled nonce for simplicity. In a real application, you must ensure that a unique nonce is used for every single message sent with a given key.
 
-Important: The example above uses a zero-filled nonce for simplicity. In a real application, you must ensure that a unique nonce is used for every single message sent with a given key.
-
-Performance Benchmarks
+## Performance Benchmarks
 The library has been benchmarked for end-to-end encrypt/decrypt operations. The results below were captured on an x64 Release build with 100,000 iterations per test.
 
-AES-256-GCM
+## AES-256-GCM
 
 64 B Payload: 1,929,324 ops/second
 
@@ -90,7 +90,7 @@ AES-256-GCM
 
 4096 B Payload: 609,067 ops/second
 
-ChaCha20-Poly1305
+## ChaCha20-Poly1305
 
 64 B Payload: 1,276,071 ops/second
 
@@ -100,5 +100,5 @@ ChaCha20-Poly1305
 
 4096 B Payload: 142,221 ops/second
 
-License
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
