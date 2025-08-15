@@ -74,6 +74,7 @@ int main() {
 
     return 0;
 }
+
 ```
 ## Important: The example above uses a zero-filled nonce for simplicity. In a real application, you must ensure that a unique nonce is used for every single message sent with a given key.
 
