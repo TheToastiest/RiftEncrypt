@@ -1,52 +1,103 @@
-# RiftEncrypt — Encrypted Communication for Real-Time Systems
+RiftEncrypt 🛡️
+RiftEncrypt is a high-performance, modern C++ encryption library designed for real-time applications like networking and games. It provides a clean, type-safe C++ wrapper around the robust and audited libsodium cryptographic library, focusing on ease of use and speed.
 
-> “If you want truth across the wire, start with encryption.”
+Features
+Modern C++ Interface: A simple, object-oriented API using std::vector for byte streams and smart pointers for resource management (std::unique_ptr).
 
----
+AEAD Ciphers: Implements authenticated encryption with associated data (AEAD) to protect against tampering.
 
-**RiftEncrypt** is a standalone C++ library for secure communication in real-time systems. It powers the encryption layer in [RiftNet](https://github.com/TheToastiest/RiftNet) and is designed to be fast, stateless, and fully compatible with **libsodium**.
+AES-256-GCM: Extremely fast on modern CPUs with AES-NI hardware acceleration.
 
----
-## BENCHMARKS
+ChaCha20-Poly1305: A secure and fast software-based cipher, providing excellent performance on platforms without AES hardware support.
 
---------------------------------------------------------------------------------
-Algorithm                Payload Size   Iterations     Ops/Second
---------------------------------------------------------------------------------
-AES-256-GCM              64 B           100000         1929324.97
-AES-256-GCM              512 B          100000         2083832.58
-AES-256-GCM              1400 B         100000         1275380.06
-AES-256-GCM              4096 B         100000         609067.18
---------------------------------------------------------------------------------
-ChaCha20-Poly1305        64 B           100000         1276071.74
-ChaCha20-Poly1305        512 B          100000         804208.91
-ChaCha20-Poly1305        1400 B         100000         335853.80
-ChaCha20-Poly1305        4096 B         100000         142221.82
---------------------------------------------------------------------------------
+Type-Safe & Modular: The design uses a virtual interface (CryptoAlgorithm) to decouple the core logic from the specific algorithm, making it easy to extend.
 
----
+Minimal Dependencies: Only requires a C++17 compiler and the libsodium library.
 
-## 🔑 Features
+High Performance: Benchmarked to handle millions of encryption/decryption operations per second.
 
-- X25519 key exchange (ephemeral)
-- ChaCha20-Poly1305 or AES256-GCM encryption
-- Nonce management with safeguards
-- Simple API, modular design
-- No runtime memory allocations inside hotpaths
+Requirements
+C++17 (or newer) compiler
 
----
+Libsodium library installed and linked
 
-## ⚙️ Integration
+For Windows users, using a package manager like vcpkg is the recommended way to install libsodium:
 
-To use RiftEncrypt:
+vcpkg install libsodium
 
-1. Include `RiftEncrypt/include/` in your project.
-2. Link against libsodium (static or dynamic).
-3. Use `SecureChannel` to encrypt/decrypt buffers.
+Quick Start: API Usage
+Using RiftEncrypt is straightforward. Create an Encryptor instance by choosing an algorithm and providing a key.
 
-Example:
-```cpp
-SecureChannel channel;
-channel.initiateHandshake();
+#include "RiftEncrypt.hpp"
+#include <iostream>
 
-channel.encrypt(message, outputBuffer);
-channel.decrypt(encryptedMessage, outputBuffer);
+int main() {
+    try {
+        // 1. Generate a secure key for AES-256-GCM
+        auto key = generate_key(crypto_aead_aes256gcm_KEYBYTES);
+
+        // 2. Create an Encryptor with the desired algorithm
+        Encryptor encryptor(std::make_unique<AESGCMAlgorithm>(key));
+
+        // 3. Prepare data
+        byte_vec plaintext = {'H', 'e', 'l', 'l', 'o', ' ', 'R', 'i', 'f', 't', 'N', 'e', 't'};
+        byte_vec nonce(crypto_aead_aes256gcm_NPUBBYTES, 0); // Use a real, unique nonce per message!
+        byte_vec associated_data = {'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A'};
+
+        // 4. Encrypt the data
+        byte_vec ciphertext = encryptor.encrypt_with_nonce(plaintext, nonce, associated_data);
+        if (ciphertext.empty()) {
+            std::cerr << "Encryption failed!" << std::endl;
+            return 1;
+        }
+        std::cout << "Encryption successful." << std::endl;
+
+        // 5. Decrypt the data
+        byte_vec decrypted_text = encryptor.decrypt_with_nonce(ciphertext, nonce, associated_data);
+        if (decrypted_text.empty()) {
+            std::cerr << "Decryption failed! (Ciphertext may have been tampered with)" << std::endl;
+            return 1;
+        }
+
+        // 6. Verify correctness
+        if (plaintext == decrypted_text) {
+            std::cout << "Success! Decrypted text matches original plaintext." << std::endl;
+        } else {
+            std::cout << "Verification failed!" << std::endl;
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+
+Important: The example above uses a zero-filled nonce for simplicity. In a real application, you must ensure that a unique nonce is used for every single message sent with a given key.
+
+Performance Benchmarks
+The library has been benchmarked for end-to-end encrypt/decrypt operations. The results below were captured on an x64 Release build with 100,000 iterations per test.
+
+AES-256-GCM
+
+64 B Payload: 1,929,324 ops/second
+
+512 B Payload: 2,083,832 ops/second
+
+1400 B Payload: 1,275,380 ops/second
+
+4096 B Payload: 609,067 ops/second
+
+ChaCha20-Poly1305
+
+64 B Payload: 1,276,071 ops/second
+
+512 B Payload: 804,208 ops/second
+
+1400 B Payload: 335,853 ops/second
+
+4096 B Payload: 142,221 ops/second
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
