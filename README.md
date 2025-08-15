@@ -1,4 +1,5 @@
-RiftEncrypt 🛡️
+RiftEncrypt 
+
 RiftEncrypt is a high-performance, modern C++ encryption library designed for real-time applications like networking and games. It provides a clean, type-safe C++ wrapper around the robust and audited libsodium cryptographic library, focusing on ease of use and speed.
 
 Features
