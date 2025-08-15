@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <memory>
-#include <sodium.h>
+    #include <sodium.h>
 
 // Forward declaration to avoid including sodium.h in the public header if not necessary,
 // though for a library like this, it's often practical to include it.
@@ -35,7 +35,6 @@ public:
      */
     virtual byte_vec encrypt(const byte_vec& plaintext, const byte_vec& associated_data) = 0;
 
-    virtual byte_vec encrypt_with_nonce(const byte_vec& plaintext, const byte_vec& nonce, const byte_vec& associated_data) = 0;
 
     /**
      * @brief Decrypts a ciphertext message.
@@ -46,6 +45,14 @@ public:
      */
     virtual byte_vec decrypt(const byte_vec& ciphertext, const byte_vec& associated_data) = 0;
 
+    /**
+     * @brief Encrypts a plaintext message with a specific nonce.
+	 */
+    virtual byte_vec encrypt_with_nonce(const byte_vec& plaintext, const byte_vec& nonce, const byte_vec& associated_data) = 0;
+
+    /**
+	* @brief Decrypts a ciphertext message with a specific nonce.
+    */
     virtual byte_vec decrypt_with_nonce(const byte_vec& ciphertext, const byte_vec& nonce, const byte_vec& associated_data) = 0;
 
 };
@@ -62,6 +69,9 @@ public:
     explicit AESGCMAlgorithm(const byte_vec& key);
     byte_vec encrypt(const byte_vec& plaintext, const byte_vec& associated_data) override;
     byte_vec decrypt(const byte_vec& ciphertext, const byte_vec& associated_data) override;
+
+	byte_vec encrypt_with_nonce(const byte_vec& plaintext, const byte_vec& nonce, const byte_vec& associated_data) override;
+	byte_vec decrypt_with_nonce(const byte_vec& ciphertext, const byte_vec& nonce, const byte_vec& associated_data) override;
 
 };
 
@@ -112,6 +122,10 @@ public:
      * @return The decrypted plaintext.
      */
     byte_vec decrypt(const byte_vec& ciphertext, const byte_vec& associated_data = {});
+
+	byte_vec encrypt_with_nonce(const byte_vec& plaintext, const byte_vec& nonce, const byte_vec& associated_data = {});
+
+	byte_vec decrypt_with_nonce(const byte_vec& ciphertext, const byte_vec& nonce, const byte_vec& associated_data = {});
 };
 
 /**

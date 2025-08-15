@@ -73,6 +73,26 @@ byte_vec AESGCMAlgorithm::encrypt(const byte_vec& plaintext, const byte_vec& ass
     return final_message;
 }
 
+byte_vec AESGCMAlgorithm::encrypt_with_nonce(const byte_vec& plaintext, const byte_vec& nonce, const byte_vec& associated_data) {
+    if (nonce.size() != crypto_aead_aes256gcm_NPUBBYTES) {
+        throw std::invalid_argument("Invalid nonce size");
+    }
+    byte_vec ciphertext(plaintext.size() + crypto_aead_aes256gcm_ABYTES);
+    unsigned long long ciphertext_len;
+    int result = crypto_aead_aes256gcm_encrypt(
+        ciphertext.data(), &ciphertext_len,
+        plaintext.data(), plaintext.size(),
+        associated_data.data(), associated_data.size(),
+        nullptr, // nsec is not used
+        nonce.data(),
+        this->key.data()
+    );
+    if (result != 0) {
+        return {}; // Return empty vector on failure
+    }
+    return ciphertext; // No prepended nonce
+}
+
 byte_vec AESGCMAlgorithm::decrypt(const byte_vec& ciphertext, const byte_vec& associated_data) {
     const size_t NONCE_SIZE = crypto_aead_aes256gcm_NPUBBYTES;
     if (ciphertext.size() < NONCE_SIZE + crypto_aead_aes256gcm_ABYTES) {
@@ -104,6 +124,26 @@ byte_vec AESGCMAlgorithm::decrypt(const byte_vec& ciphertext, const byte_vec& as
     return decrypted_message;
 }
 
+byte_vec AESGCMAlgorithm::decrypt_with_nonce(const byte_vec& ciphertext, const byte_vec& nonce, const byte_vec& associated_data) {
+    if (nonce.size() != crypto_aead_aes256gcm_NPUBBYTES) {
+        throw std::invalid_argument("Invalid nonce size");
+    }
+    byte_vec decrypted(ciphertext.size() - crypto_aead_aes256gcm_ABYTES);
+    unsigned long long decrypted_len;
+    int result = crypto_aead_aes256gcm_decrypt(
+        decrypted.data(), &decrypted_len,
+        nullptr, // nsec is not used
+        ciphertext.data(), ciphertext.size(),
+        associated_data.data(), associated_data.size(),
+        nonce.data(),
+        this->key.data()
+    );
+    if (result != 0) {
+        return {}; // Decryption failed
+    }
+    decrypted.resize(decrypted_len);
+    return decrypted;
+}
 
 // --- ChaCha20Poly1305Algorithm Implementation ---
 ChaCha20Poly1305Algorithm::ChaCha20Poly1305Algorithm(const byte_vec& key) : key(key) {
@@ -212,19 +252,24 @@ byte_vec ChaCha20Poly1305Algorithm::decrypt_with_nonce(const byte_vec& ciphertex
     return decrypted;
 }
 
-// --- Encryptor Implementation ---
-Encryptor::Encryptor(std::unique_ptr<CryptoAlgorithm> algo) : algorithm(std::move(algo)) {}
+// --- Encryptor Implementation (Updated) ---
+Encryptor::Encryptor(std::unique_ptr<CryptoAlgorithm> algo) : algorithm(std::move(algo)) {
+    if (!algorithm) {
+        throw std::invalid_argument("Encryptor cannot be initialized with a null algorithm.");
+    }
+}
 
 byte_vec Encryptor::encrypt(const byte_vec& plaintext, const byte_vec& associated_data) {
-    if (!algorithm) {
-        throw std::runtime_error("No encryption algorithm has been configured.");
-    }
     return algorithm->encrypt(plaintext, associated_data);
 }
 
 byte_vec Encryptor::decrypt(const byte_vec& ciphertext, const byte_vec& associated_data) {
-    if (!algorithm) {
-        throw std::runtime_error("No encryption algorithm has been configured.");
-    }
     return algorithm->decrypt(ciphertext, associated_data);
+}
+
+byte_vec Encryptor::encrypt_with_nonce(const byte_vec& plaintext, const byte_vec& nonce, const byte_vec& associated_data) {
+    return algorithm->encrypt_with_nonce(plaintext, nonce, associated_data);
+}
+byte_vec Encryptor::decrypt_with_nonce(const byte_vec& ciphertext, const byte_vec& nonce, const byte_vec& associated_data) {
+    return algorithm->decrypt_with_nonce(ciphertext, nonce, associated_data);
 }

@@ -43,3 +43,21 @@ std::string to_str(const byte_vec& vec) {
 //
 //    return 0;
 //}
+
+int main() {
+    std::cout << "Attempting to create AESGCMAlgorithm object..." << std::endl;
+
+    // This is the key part. This line will fail to link because 
+    // AESGCMAlgorithm has not implemented all pure virtual functions
+    // from CryptoAlgorithm.
+    try {
+        byte_vec key = generate_key(crypto_aead_aes256gcm_KEYBYTES);
+        AESGCMAlgorithm aes_instance(key);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << '\n';
+    }
+
+    std::cout << "This line will not be reached if the build fails." << std::endl;
+    return 0;
+}
