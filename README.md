@@ -9,7 +9,6 @@
 ---
 ## BENCHMARKS
 
-Starting RiftEncrypt End-to-End Benchmark...
 --------------------------------------------------------------------------------
 Algorithm                Payload Size   Iterations     Ops/Second
 --------------------------------------------------------------------------------
